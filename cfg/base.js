@@ -1,6 +1,7 @@
 'use strict';
 let path = require('path');
 let defaultSettings = require('./defaults');
+const bodyParser = require('body-parser');
 
 // Get our api routes
 const api = require('../server/routes/api');
@@ -30,6 +31,11 @@ module.exports = {
     publicPath: defaultSettings.publicPath,
     noInfo: false,
     setup: function(app) {
+      app.use(bodyParser.json());
+      app.use(bodyParser.urlencoded({
+          extended: true
+      }));
+
       // Set our api routes
       app.use('/api', api);
     }

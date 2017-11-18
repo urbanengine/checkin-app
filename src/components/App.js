@@ -2,6 +2,7 @@ require('styles/App.css');
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 import Autosuggest from 'react-autosuggest';
+import { ToastContainer } from 'react-toastr';
 
 import React from 'react'
 
@@ -52,7 +53,7 @@ class AppComponent extends React.Component {
     }
   }
 
-  onChange = (event, { newValue, method }) => {
+  onChange = (event, { newValue }) => {
     this.setState({
       value: newValue
     });
@@ -71,10 +72,37 @@ class AppComponent extends React.Component {
   };
 
   handleClick = () => {
-    console.log('checkin');
-    //TODO: actually checkin.
-
-    //I'm thinking here the best way will to use some sort of component and fire off the request right here. Then I can get the response and show it directly through toastr
+    if (this.state.value != null || this.state.value.length > 0)
+      {
+        var json = JSON.stringify({
+          email: this.state.value,
+          event: this.state.cwnNumber
+        });
+        fetch('/api/checkin', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: json
+        }).then((response) => {
+          response.json().then(json => {
+            if (response.ok)
+            {
+              this.container.success('Thank you for Checking in', {
+                closeButton: true
+              });
+            }
+            else
+            {
+              this.container.error(json.error, 'Unsuccessful Checkin', {
+                closeButton: true
+              });
+            }
+          });
+        }).catch(() => {
+        });
+      }
   }
 
   componentWillMount() {
@@ -84,7 +112,7 @@ class AppComponent extends React.Component {
           return resp.json();
       }).then((json) => {
         that.setState({ cwnNumber: json.cwnNumber, users: json.users, loading: false });
-      }).catch((reason) => {
+      }).catch(() => {
         that.setState({ cwnNumber: -1, users: [], loading: true });
       });
   }
@@ -103,6 +131,10 @@ class AppComponent extends React.Component {
   
     return (
       <div>
+        <ToastContainer
+          ref={ref => this.container = ref}
+          className="toast-top-right"
+        />
         <h1>CoWorking Night</h1>
         <h1>Please sign in</h1>
         <h4>Enter you name or email address</h4>
