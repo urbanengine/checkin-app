@@ -1,3 +1,6 @@
+require('styles/vender/bootstrap.min.css');
+require('styles/vender/font-awesome.min.css');
+require('styles/vender/Raleway.css');
 require('styles/App.css');
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -5,6 +8,8 @@ import Autosuggest from 'react-autosuggest';
 import { ToastContainer } from 'react-toastr';
 
 import React from 'react'
+
+var selectedEmail = "";
 
 // https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
 function escapeRegexCharacters(str) {
@@ -27,7 +32,8 @@ function getSuggestions(value, users) {
 }
 
 function getSuggestionValue(suggestion) {
-  return suggestion.email;
+  selectedEmail = suggestion.email;
+  return suggestion.name;
 }
 
 function renderSuggestion(suggestion) {
@@ -72,10 +78,10 @@ class AppComponent extends React.Component {
   };
 
   handleClick = () => {
-    if (this.state.value != null || this.state.value.length > 0)
+    if (this.state.value != null && this.state.value.length > 0 && selectedEmail != null && selectedEmail.length > 0)
       {
         var json = JSON.stringify({
-          email: this.state.value,
+          email: selectedEmail,
           event: this.state.cwnNumber
         });
         fetch('/api/checkin', {
@@ -130,22 +136,37 @@ class AppComponent extends React.Component {
     };
   
     return (
-      <div>
+      <div className="checkin-background">
         <ToastContainer
           ref={ref => this.container = ref}
           className="toast-top-right"
         />
-        <h1>CoWorking Night</h1>
-        <h1>Please sign in</h1>
-        <h4>Enter you name or email address</h4>
-        <Autosuggest
-          suggestions={suggestions}
-          onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-          onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-          getSuggestionValue={getSuggestionValue}
-          renderSuggestion={renderSuggestion}
-          inputProps={inputProps} />
-          <button onClick={this.handleClick}>SignIn</button>
+        <div>
+          <h1 className="cwn-logo"><img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/69546/cwn-logo-light-fullnowatermark.svg" alt="CoWorking Night - Learn. Connect. Collaborate." /></h1>
+          <h2 className="cwn-info"><span className="cwn-edition">CoWorking Night #<span className="cwn-edition-number">{this.state.cwnNumber}</span></span><span className="cwn-date-time"><span className="cwn-date">Oct 18, 2017</span><span className="cwn-time">6‑10pm</span></span><span className="cwn-location">Huntsville West</span></h2>
+        </div>
+        <br /><br />
+        <h2 className="cwn-info">Please Sign In</h2>
+        <div className="input-group">
+          <Autosuggest
+            suggestions={suggestions}
+            onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+            onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+            getSuggestionValue={getSuggestionValue}
+            renderSuggestion={renderSuggestion}
+            inputProps={inputProps} />
+          <button type="button" className="btn" onClick={this.handleClick}>Sign In</button>
+        </div>
+        <footer className="footer fixed-bottom text-center">
+          <div className="container">
+            <p className="schedule-url">
+              <a href="https://coworkingnight.org/schedule">coworkingnight.org/schedule</a>
+            </p>
+            <p className="cwn-sponsors">
+              Sponsored by <a href="#" target="_blank">Huntsville West</a> and <a href="#" target="_blank">Hackster.io</a>. Presented by <a href="#" target="_blank">Urban Engine</a>.
+            </p>
+          </div>
+        </footer>
       </div>
     );
   }
