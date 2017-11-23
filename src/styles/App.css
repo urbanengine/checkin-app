@@ -56,9 +56,6 @@ a:hover {
 .cwn-date-time:before {
   content: " | "
 }
-.cwn-time:before {
-  content: " - "
-}
 .cwn-location:before {
   content: " | "
 }

@@ -143,7 +143,7 @@ class AppComponent extends React.Component {
         />
         <div>
           <h1 className="cwn-logo"><img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/69546/cwn-logo-light-fullnowatermark.svg" alt="CoWorking Night - Learn. Connect. Collaborate." /></h1>
-          <h2 className="cwn-info"><span className="cwn-edition">CoWorking Night #<span className="cwn-edition-number">{this.state.cwnNumber}</span></span><span className="cwn-date-time"><span className="cwn-date">Oct 18, 2017</span><span className="cwn-time">6‑10pm</span></span><span className="cwn-location">Huntsville West</span></h2>
+          <h2 className="cwn-info"><span className="cwn-edition">CoWorking Night #<span className="cwn-edition-number">{this.state.cwnNumber}</span></span><span className="cwn-date-time"><span className="cwn-time">6‑10pm</span></span><span className="cwn-location">Huntsville West</span></h2>
         </div>
         <br /><br />
         <h2 className="cwn-info">Please Sign In</h2>
