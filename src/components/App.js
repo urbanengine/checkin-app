@@ -8,7 +8,6 @@ import Autosuggest from 'react-autosuggest';
 import { ToastContainer } from 'react-toastr';
 
 import React from 'react'
-import ReactDOM from 'react-dom';
 
 var selectedEmail = "";
 
