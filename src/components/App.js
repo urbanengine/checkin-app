@@ -9,7 +9,7 @@ import { ToastContainer } from 'react-toastr';
 
 import React from 'react'
 
-var selectedEmail = "";
+var selectedEmail = '';
 
 // https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
 function escapeRegexCharacters(str) {
@@ -66,9 +66,9 @@ class AppComponent extends React.Component {
   };
   
   onSuggestionsFetchRequested = ({ value }) => {
-    this.setState({
-      suggestions: getSuggestions(value, this.state.users)
-    });
+      this.setState({
+        suggestions: getSuggestions(value, this.state.users)
+      });
   };
 
   onSuggestionsClearRequested = () => {
@@ -78,6 +78,7 @@ class AppComponent extends React.Component {
   };
 
   clearInput() {
+    this.state.value = '';
     this.refs.autosuggest.input.value = '';
   }
 
@@ -159,7 +160,7 @@ class AppComponent extends React.Component {
             onSuggestionsClearRequested={this.onSuggestionsClearRequested}
             getSuggestionValue={getSuggestionValue}
             renderSuggestion={renderSuggestion}
-            inputProps={inputProps} 
+            inputProps={inputProps}
             ref="autosuggest"/>
           <button type="button" className="btn" onClick={this.handleClick}>Sign In</button>
         </div>
