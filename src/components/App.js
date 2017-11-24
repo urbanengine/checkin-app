@@ -8,6 +8,7 @@ import Autosuggest from 'react-autosuggest';
 import { ToastContainer } from 'react-toastr';
 
 import React from 'react'
+import ReactDOM from 'react-dom';
 
 var selectedEmail = "";
 
@@ -77,6 +78,10 @@ class AppComponent extends React.Component {
     });
   };
 
+  clearInput() {
+    this.refs.autosuggest.input.value = '';
+  }
+
   handleClick = () => {
     if (this.state.value != null && this.state.value.length > 0 && selectedEmail != null && selectedEmail.length > 0)
       {
@@ -105,6 +110,7 @@ class AppComponent extends React.Component {
                 closeButton: true
               });
             }
+            this.clearInput();
           });
         }).catch(() => {
         });
@@ -154,7 +160,8 @@ class AppComponent extends React.Component {
             onSuggestionsClearRequested={this.onSuggestionsClearRequested}
             getSuggestionValue={getSuggestionValue}
             renderSuggestion={renderSuggestion}
-            inputProps={inputProps} />
+            inputProps={inputProps} 
+            ref="autosuggest"/>
           <button type="button" className="btn" onClick={this.handleClick}>Sign In</button>
         </div>
         <footer className="footer fixed-bottom text-center">
