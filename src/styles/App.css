@@ -30,6 +30,9 @@ a {
 a:hover {
   color:#c1342a;
 }
+.cwn-sponsers a {
+  pointer-events: none;
+}
 
 .checkin-background {
   padding:2rem 4%;
