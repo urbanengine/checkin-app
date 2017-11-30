@@ -48,9 +48,6 @@ router.post('/checkin', (req, res) => {
       }).catch((error) => {
         if (error.response)
         {
-        console.log(error.response.data)
-        console.log(error.response.status);
-        console.log(error.response.statusText);
         res.status(error.response.status).json(error.response.data);
         }
       });
