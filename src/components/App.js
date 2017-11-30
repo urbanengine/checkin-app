@@ -98,9 +98,9 @@ class AppComponent extends React.Component {
           body: json
         }).then((response) => {
           response.json().then(json => {
-            if (response.ok)
+            if (response.ok && response.status == 201)
             {
-              this.container.success('Thank you for Checking in', {
+              this.container.success('Thank you for Checking in', 'Wecome to CoWorking Night', {
                 closeButton: true
               });
             }
