@@ -57,5 +57,30 @@ router.post('/checkin', (req, res) => {
   }
 });
 
+router.post('/createAndCheckin', (req, res) => {
+  try {
+    console.log(req.body);
+  axios.post(`${baseUrl}checkin`, JSON.stringify(req.body), {headers: {"Authorization": process.env.APIKEY,}})
+    .then(response => {
+      if (response.status == 200)
+      {
+        res.status(200).json({ok:true});
+      }
+      else
+      {
+      res.status(response.status).json({error : response.statusText});
+      }
+      }).catch((error) => {
+        if (error.response)
+        {
+        res.status(error.response.status).json(error.response.data);
+        }
+      });
+  }
+  catch(e) {
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
+
 module.exports = router;
 

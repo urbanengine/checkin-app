@@ -9,7 +9,7 @@ import { ToastContainer } from 'react-toastr';
 
 import React from 'react'
 
-var selectedEmail = '';
+var selectedSuggestionEmail = '';
 
 // https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
 function escapeRegexCharacters(str) {
@@ -32,7 +32,7 @@ function getSuggestions(value, users) {
 }
 
 function getSuggestionValue(suggestion) {
-  selectedEmail = suggestion.email;
+  selectedSuggestionEmail = suggestion.email;
   return suggestion.name;
 }
 
@@ -46,6 +46,11 @@ function renderSuggestion(suggestion) {
   );
 }
 
+function validateEmail(email) {
+  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email.toLowerCase());
+}
+
 class AppComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -55,7 +60,8 @@ class AppComponent extends React.Component {
       cwnNumber: -1,
       users: [],
       value: '',
-      suggestions: []
+      suggestions: [],
+      shouldCreateUserAndCheckin: false
     }
   }
 
@@ -64,6 +70,16 @@ class AppComponent extends React.Component {
       value: newValue
     });
   };
+
+  emailIsASuggestion = (email) => {
+    var i;
+    for (i = 0; i < this.state.suggestions.length; i++) {
+        if (this.state.suggestions[i].email === email) {
+            return true;
+        }
+    }
+    return false;
+  }
   
   onSuggestionsFetchRequested = ({ value }) => {
       this.setState({
@@ -77,43 +93,117 @@ class AppComponent extends React.Component {
     });
   };
 
-  clearInput() {
+  clearInputs() {
     this.state.value = '';
-    this.refs.autosuggest.input.value = '';
+    if (this.refs.autosuggest && this.refs.autosuggest.input) this.refs.autosuggest.input.value = '';
+    selectedSuggestionEmail = '';
+    if (this.refs.create_email) this.refs.create_email.value = '';
+    if (this.refs.create_first_name) this.refs.create_first_name.value = '';
+    if (this.refs.create_last_name) this.refs.create_last_name.value = '';
+  }
+
+  checkinWithOpenHsvAccount = (emailInput) => {
+    var json = JSON.stringify({
+      email: emailInput,
+      event: this.state.cwnNumber
+    });
+    fetch('/api/checkin', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: json
+    }).then((response) => {
+      response.json().then(json => {
+        if (response.ok && response.status == 201)
+        {
+          this.container.success('Thank you for Checking in', 'Wecome to CoWorking Night', {
+            closeButton: true
+          });
+        }
+        else
+        {
+          this.container.error(json.error, 'Unsuccessful Checkin', {
+            closeButton: true
+          });
+        }
+        this.clearInputs();
+      });
+    }).catch(() => {
+    });
+  }
+
+  createOpenHsvAccountAndCheckin = (emailInput, firstNameInput, lastNameInput) => {
+    var json = JSON.stringify({
+      email: emailInput,
+      first_name: firstNameInput,
+      last_name: lastNameInput,
+      event: this.state.cwnNumber
+    });
+    fetch('/api/createAndCheckin', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: json
+    }).then((response) => {
+      response.json().then(json => {
+        if (response.ok && response.status == 201)
+        {
+          this.container.success('Thank you for Checking In, please refer to your email to setup your OpenHuntsville account', 'Wecome to CoWorking Night', {
+            closeButton: true
+          });
+        }
+        else
+        {
+          this.container.error(json.error, 'Unsuccessful Checkin', {
+            closeButton: true
+          });
+        }
+        this.clearInputs();
+      });
+    }).catch(() => {
+    });
   }
 
   handleClick = () => {
-    if (this.state.value != null && this.state.value.length > 0 && selectedEmail != null && selectedEmail.length > 0)
+    if (this.state.value != null && this.state.value.length > 0)
       {
-        var json = JSON.stringify({
-          email: selectedEmail,
-          event: this.state.cwnNumber
-        });
-        fetch('/api/checkin', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: json
-        }).then((response) => {
-          response.json().then(json => {
-            if (response.ok && response.status == 201)
-            {
-              this.container.success('Thank you for Checking in', 'Wecome to CoWorking Night', {
-                closeButton: true
-              });
+        if (selectedSuggestionEmail != null && selectedSuggestionEmail.length > 0) {
+          console.log ("checking in with hsv acct");
+          this.checkinWithOpenHsvAccount(selectedSuggestionEmail);
+        } else if (this.state.shouldCreateUserAndCheckin) {
+          console.log("lets create an account")
+          const email = this.refs.create_email.value;
+          const firstName = this.refs.create_first_name.value;
+          const lastName = this.refs.create_last_name.value;
+          this.clearInputs();
+          this.setState({shouldCreateUserAndCheckin: false});
+          this.createOpenHsvAccountAndCheckin(email, firstName, lastName);
+        } else {
+          console.log ("validating email");
+          if (validateEmail(this.state.value)) {
+            console.log ("checking if email is a suggestion");
+            // make sure user hasn't typed in open huntsville email
+            if (this.emailIsASuggestion(this.state.value)) {
+              console.log ("checking in with hsv acct");
+              this.checkinWithOpenHsvAccount(this.state.value);
+            } else {
+              console.log ("lets create an account");
+              // show first name / last name boxes, and create new user
+              this.setState({shouldCreateUserAndCheckin: true});
             }
-            else
-            {
-              this.container.error(json.error, 'Unsuccessful Checkin', {
-                closeButton: true
-              });
-            }
-            this.clearInput();
-          });
-        }).catch(() => {
-        });
+          } else {
+            console.log ("invalid email");
+            // invalid email. Ask user to enter email through toastr
+            this.clearInputs();
+            this.container.error('Please enter a valid email to Check In', 'Invalid Email', {
+              closeButton: true
+            });
+          }
+        }
       }
   }
 
@@ -140,19 +230,19 @@ class AppComponent extends React.Component {
       value,
       onChange: this.onChange
     };
-  
-    return (
-      <div className="checkin-background">
-        <ToastContainer
-          ref={ref => this.container = ref}
-          className="toast-top-right"
-        />
-        <div>
-          <h1 className="cwn-logo"><img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/69546/cwn-logo-light-fullnowatermark.svg" alt="CoWorking Night - Learn. Connect. Collaborate." /></h1>
-          <h2 className="cwn-info"><span className="cwn-edition">CoWorking Night #<span className="cwn-edition-number">{this.state.cwnNumber}</span></span><span className="cwn-date-time"><span className="cwn-time">6‑10pm</span></span><span className="cwn-location">Huntsville West</span></h2>
+    const titleText = this.state.shouldCreateUserAndCheckin ? "Create an OpenHuntsville account to Check In" : "Check In using your OpenHuntsville account";
+    const checkinText = this.state.shouldCreateUserAndCheckin ? "Create Account and Checkin" : "Check In";
+    console.log("Checking state value");
+    console.log(this.state.value);
+
+    const inputGroup = this.state.shouldCreateUserAndCheckin ? 
+        <div className="input-group display-block">
+          <div className="pad"><input className="create-account-input display-block" type="text" value={this.state.value} ref="create_email" disabled /></div>
+          <div className="pad"><input className="create-account-input display-block" type="text" placeholder="First Name" ref="create_first_name" /> </div>
+          <div className="pad"><input className="create-account-input display-block" type="text" placeholder="Last Name" ref="create_last_name" /> </div>
+          <div className="pad"><button type="button" className="btn display-block" onClick={this.handleClick}>{checkinText}</button></div>
         </div>
-        <br /><br />
-        <h2 className="cwn-info">Please Sign In</h2>
+        :
         <div className="input-group">
           <Autosuggest
             suggestions={suggestions}
@@ -162,8 +252,21 @@ class AppComponent extends React.Component {
             renderSuggestion={renderSuggestion}
             inputProps={inputProps}
             ref="autosuggest"/>
-          <button type="button" className="btn" onClick={this.handleClick}>Sign In</button>
+          <button type="button" className="btn" onClick={this.handleClick}>{checkinText}</button>
+        </div>;
+    
+    return (
+      <div className="checkin-background">
+        <ToastContainer
+          ref={ref => this.container = ref}
+          className="toast-top-right"
+        />
+        <div>
+          <h1 className="cwn-logo"><img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/69546/cwn-logo-light-fullnowatermark.svg" alt="CoWorking Night - Learn. Connect. Collaborate." /></h1>
         </div>
+        <br /><br />
+        <h2 className="cwn-info">{titleText}</h2>
+        {inputGroup}
         <footer className="footer fixed-bottom text-center">
           <div className="container">
             <p className="schedule-url">
@@ -175,11 +278,10 @@ class AppComponent extends React.Component {
           </div>
         </footer>
       </div>
-    );
+      );
+    }
   }
-}
 
-AppComponent.defaultProps = {
-};
+AppComponent.defaultProps = { };
 
 export default AppComponent;
