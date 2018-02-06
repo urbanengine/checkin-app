@@ -82,9 +82,15 @@ class AppComponent extends React.Component {
   }
   
   onSuggestionsFetchRequested = ({ value }) => {
-      this.setState({
-        suggestions: getSuggestions(value, this.state.users)
-      });
+      console.log(value);
+      if (value.length < 3)
+        this.setState({
+          suggestions: []
+        });
+      else
+        this.setState({
+          suggestions: getSuggestions(value, this.state.users)
+        });
   };
 
   onSuggestionsClearRequested = () => {
@@ -226,22 +232,23 @@ class AppComponent extends React.Component {
     const value = this.state.value;
     const suggestions = this.state.suggestions;
     const inputProps = {
-      placeholder: 'Enter your Name or Email',
+      placeholder: 'Enter your email address',
       value,
       onChange: this.onChange
     };
-    const titleText = this.state.shouldCreateUserAndCheckin ? "Create an OpenHuntsville account to Check In" : "Check In using your OpenHuntsville account";
-    const checkinText = this.state.shouldCreateUserAndCheckin ? "Create Account and Checkin" : "Check In";
-    console.log("Checking state value");
-    console.log(this.state.value);
+    const titleText = this.state.shouldCreateUserAndCheckin ? "Almost Done..." : "Please Check In";
+    const checkinText = this.state.shouldCreateUserAndCheckin ? "Complete Check-In" : "Check In";
 
     const inputGroup = this.state.shouldCreateUserAndCheckin ? 
+      <div>
+        <p className="vw30">Please provide your name to complete check-in. You won't be asked for this next time.</p>
         <div className="input-group display-block">
           <div className="pad"><input className="create-account-input display-block" type="text" value={this.state.value} ref="create_email" disabled /></div>
           <div className="pad"><input className="create-account-input display-block" type="text" placeholder="First Name" ref="create_first_name" /> </div>
           <div className="pad"><input className="create-account-input display-block" type="text" placeholder="Last Name" ref="create_last_name" /> </div>
           <div className="pad"><button type="button" className="btn display-block" onClick={this.handleClick}>{checkinText}</button></div>
         </div>
+      </div>
         :
         <div className="input-group">
           <Autosuggest
@@ -273,7 +280,7 @@ class AppComponent extends React.Component {
               <a href="https://coworkingnight.org/schedule">coworkingnight.org/schedule</a>
             </p>
             <p className="cwn-sponsors">
-              Sponsored by <a href="#" target="_blank">Huntsville West</a> and <a href="#" target="_blank">Hackster.io</a>. Presented by <a href="#" target="_blank">Urban Engine</a>.
+              Powered by <a href="#" target="_blank"><img className="openhsv-logo" src={require('../imgs/openhsv-logo.png')} alt="OpenHSV logo" /></a>. Presented by <a href="#" target="_blank">Urban Engine</a>.
             </p>
           </div>
         </footer>
